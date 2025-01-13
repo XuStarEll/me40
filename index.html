@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centered Messages</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    #flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      opacity: 0;
+      z-index: 2;
+      transition: opacity 2s ease-in-out;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+    }
+
+    .message {
+      font-size: 4rem;
+      color: white;
+      text-shadow: 
+        0 0 10px rgba(255, 255, 255, 1), 
+        0 0 20px rgba(255, 255, 255, 0.8), 
+        0 0 30px rgba(255, 255, 255, 0.6), 
+        0 0 40px rgba(255, 255, 255, 0.4);
+      opacity: 0;
+      transition: opacity 2s ease-in-out;
+    }
+
+    #message1 {
+      animation: moveUp 2s ease-in-out forwards;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 
+          0 0 10px rgba(255, 255, 255, 0.8), 
+          0 0 20px rgba(255, 255, 255, 0.6), 
+          0 0 30px rgba(255, 255, 255, 0.4);
+      }
+      to {
+        text-shadow: 
+          0 0 20px rgba(255, 255, 255, 1), 
+          0 0 40px rgba(255, 255, 255, 0.9), 
+          0 0 60px rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    @keyframes moveUp {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(-20%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="flash"></div>
+  <canvas id="lightningCanvas"></canvas>
+  <div class="container">
+    <div id="message1" class="message">Happy Man’s Day</div>
+    <div id="message2" class="message">Love you my bestie</div>
+  </div>
+  <script>
+    const flash = document.getElementById('flash');
+    const message1 = document.getElementById('message1');
+    const message2 = document.getElementById('message2');
+
+    function startSequence() {
+      // مرحله 1: صفحه سفید می‌شود
+      flash.style.opacity = 1;
+
+      setTimeout(() => {
+        flash.style.opacity = 0;
+
+        setTimeout(() => {
+          // مرحله 2: پیام اول ظاهر می‌شود
+          message1.style.opacity = 1;
+
+          setTimeout(() => {
+            // مرحله 3: نمایش رعد و برق
+            startLightning();
+
+            setTimeout(() => {
+              // مرحله 4: پیام اول به بالا حرکت می‌کند
+              message1.style.animation = "moveUp 2s ease-in-out forwards";
+
+              setTimeout(() => {
+                // مرحله 5: پیام دوم ظاهر می‌شود
+                message2.style.opacity = 1;
+              }, 2000); // زمان حرکت پیام اول
+            }, 3000); // مدت زمان رعد و برق
+          }, 2000); // زمان ظاهر شدن پیام اول
+        }, 2000); // زمان محو شدن صفحه سفید
+      }, 2000); // زمان سفید شدن کامل صفحه
+    }
+
+    function startLightning() {
+      const canvas = document.getElementById('lightningCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const COLORS = [
+        'rgba(255, 0, 0, 0.8)', 
+        'rgba(0, 255, 0, 0.8)', 
+        'rgba(0, 0, 255, 0.8)', 
+        'rgba(255, 255, 0, 0.8)',
+        'rgba(255, 0, 255, 0.8)', 
+        'rgba(0, 255, 255, 0.8)'
+      ];
+
+      function random(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function drawBranch(x, y, length, angle, branchWidth, depth) {
+        if (depth === 0) return;
+
+        const endX = x + length * Math.cos(angle);
+        const endY = y + length * Math.sin(angle);
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(endX, endY);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = branchWidth;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
+        ctx.stroke();
+
+        const newLength = length * random(0.7, 0.9);
+        const newBranchWidth = branchWidth * 0.7;
+
+        drawBranch(endX, endY, newLength, angle - random(0.2, 0.5), newBranchWidth, depth - 1);
+        drawBranch(endX, endY, newLength, angle + random(0.2, 0.5), newBranchWidth, depth - 1);
+      }
+
+      function drawLightning() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const startX = random(canvas.width * 0.1, canvas.width * 0.9);
+        const startY = 0;
+        const length = random(200, 300);
+        const angle = Math.PI / 2;
+        const branchWidth = 4;
+        const depth = 5;
+
+        drawBranch(startX, startY, length, angle, branchWidth, depth);
+      }
+
+      function animateLightning() {
+        drawLightning();
+        setTimeout(animateLightning, random(500, 1500)); // تأخیر تصادفی بین اجراها
+      }
+
+      animateLightning();
+    }
+
+    startSequence();
+  </script>
+</body>
+</html>
